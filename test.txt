@@ -1,0 +1,4 @@
+if then else while do end
+<= >= !=
+111
+222

@@ -1,4 +1,8 @@
-if then else while do end
-<= >= !=
+if then else while do begin break end
+<= >= != ==
+and or not
+< > = !
++ - * /
 111
 222
+hello world

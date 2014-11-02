@@ -80,6 +80,16 @@ void Lexer::resetBuf()
     _bufIndex = 0;
 }
 
+int Lexer::isReserved(char *s)
+{
+    for (int i = IF; i < EOS; i ++) {
+        if (0 == strcmp(tokens[i - IF], s)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 int Lexer::lex(SemInfo *semInfo)
 {
     this->resetBuf();
@@ -115,7 +125,6 @@ int Lexer::lex(SemInfo *semInfo)
                 if (_current != '=') {
                     return '<';
                 } else {
-                    LEX_DEBUG("it is less equal\n");
                     this->next();
                     return LE;
                 }
@@ -153,9 +162,19 @@ int Lexer::lex(SemInfo *semInfo)
             default:
             {
                 if (isalpha(_current)) {
-                    int c = _current;
-                    this->next();
-                    return c;
+                    int token = -1;
+                    do {
+                        this->saveAndNext();
+                    } while (isalnum(_current));
+                    this->save('\0');
+                    semInfo->s = (char *)malloc(strlen(_buf) + 1);
+                    strncpy(semInfo->s, _buf, strlen(_buf));
+                    token = this->isReserved(semInfo->s);
+                    if (token > 0){
+                        return token;
+                    } else {
+                        return NAME;
+                    }
                 } else {
                     int c = _current;
                     this->next();
@@ -206,7 +225,8 @@ Lexer::Lexer(const char *filename)
             }
         }
     }
-    _current = _sourceBuf[0]; 
+    _current = _sourceBuf[0];
+    _sourceIndex = 1;
     close(fd);
     for (int i = 0; i < _sourceBufSize; i ++) {
         if (-1 == _sourceBuf[i]) {
@@ -242,6 +262,11 @@ void Lexer::nextToken()
         _lookAheadToken.token = EOS;
     } else {
         _currentToken.token = this->lex(&_currentToken.semInfo);
+    }
+    if (_currentToken.token > 256) {
+        LEX_DEBUG("token is %s\n", tokens[_currentToken.token - IF]);
+    } else {
+        LEX_DEBUG("token is %c\n", _currentToken.token);
     }
 }
 

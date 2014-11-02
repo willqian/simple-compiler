@@ -14,11 +14,12 @@ int main(int argc, char *argv[])
         l->nextToken();
         token = l->getCurrentToken().token;
         lineNumber = l->getCurrentLineNumber();
-        printf("[line %d]current token is %d\n", lineNumber, token); 
         if (EOS == token) {
             break;
         } else if (NUMBER == token) {
             printf("number is %d\n", l->getCurrentToken().semInfo.r);
+        } else if (NAME == token) {
+            printf("symbol name is %s\n", l->getCurrentToken().semInfo.s);
         }
     }
     return 0;

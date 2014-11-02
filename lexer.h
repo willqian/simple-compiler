@@ -38,6 +38,7 @@ private:
     int lex(SemInfo *semInfo);
     void incLineNumber();
     void resetBuf();
+    int isReserved(char *s);
 
 public:
     Lexer(const char *filename);

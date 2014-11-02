@@ -105,6 +105,7 @@ int Lexer::lex(SemInfo *semInfo)
                 if (_current != '=') {
                     return '=';
                 } else {
+                    this->next();
                     return EQ;
                 }
             }
@@ -115,6 +116,7 @@ int Lexer::lex(SemInfo *semInfo)
                     return '<';
                 } else {
                     LEX_DEBUG("it is less equal\n");
+                    this->next();
                     return LE;
                 }
             }
@@ -124,6 +126,7 @@ int Lexer::lex(SemInfo *semInfo)
                 if (_current != '=') {
                     return '>';
                 } else {
+                    this->next();
                     return GE;
                 }
             }
@@ -133,6 +136,7 @@ int Lexer::lex(SemInfo *semInfo)
                 if (_current != '=') {
                     return '!';
                 } else {
+                    this->next();
                     return NE;
                 }
             }

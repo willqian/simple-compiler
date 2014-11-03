@@ -242,6 +242,13 @@ Lexer::~Lexer()
     free(_sourceBuf);
     _buf = NULL;
     _sourceBuf = NULL;
+
+    if (NULL != _currentToken.semInfo.s) {
+        free(_currentToken.semInfo.s);
+    }
+    if (NULL != _lookAheadToken.semInfo.s) {
+        free(_lookAheadToken.semInfo.s);
+    }
 }
 
 Token Lexer::getCurrentToken()

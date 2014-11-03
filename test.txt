@@ -3,6 +3,10 @@ if then else while do begin break end
 and or not
 < > = !
 + - * /
+function return
 111
 222
 hello world
+h11
+w11s
+12h

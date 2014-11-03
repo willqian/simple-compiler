@@ -1,5 +1,5 @@
 CC = g++
-SRCS = main.cpp lexer.cpp ASTNode.cpp
+SRCS = main.cpp lexer.cpp ASTNode.cpp AST.cpp
 PROG = compiler
 CFLAGS = -std=c++11
 

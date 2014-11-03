@@ -28,6 +28,8 @@ public:
     ASTNode* getLeft();
     ASTNode* getRight();
     ASTNode* getThird();
+
+    friend class AST;
 };
 
 #endif /* ast_node_h */

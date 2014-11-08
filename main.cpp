@@ -1,5 +1,39 @@
-#include "lexer.h"
+#include "parser.h"
 #include <stdio.h>
+
+int calc(AST *tree)
+{
+    int a = 0;
+    int b = 0;
+    int val = 0;
+
+    if (NULL != tree) {
+        if (NUMBER == tree->getRootNode()->getToken()->token) {
+            return tree->getRootNode()->getToken()->semInfo.r;
+        }
+        a = calc(tree->getLeft());
+        b = calc(tree->getRight());
+
+        switch (tree->getRootNode()->getToken()->token) {
+        case '+':
+            val = a + b;
+            break;
+        case '-':
+            val = a - b;
+            break;
+        case '*':
+            val = a * b;
+            break;
+        case '/':
+            val = a / b;
+            break;
+        default:
+            break;
+        }
+    }
+    printf("return %d\n", val);
+    return val;
+}
 
 int main(int argc, char *argv[])
 {
@@ -7,19 +41,19 @@ int main(int argc, char *argv[])
         printf("usage: ./complier sourcefile\n");
         return -1;
     }
-    Lexer *l = new Lexer(argv[1]);
-    int token;
-    int lineNumber;
+    Parser *p = new Parser(argv[1]);
+    AST* tree = p->parse();
+    printf("result is %d\n", calc(tree->getRight()));
+    return 0;
+    Token token;
     while (1) {
-        l->nextToken();
-        token = l->getCurrentToken().token;
-        lineNumber = l->getCurrentLineNumber();
-        if (EOS == token) {
+        token = p->nextToken();
+        if (EOS == token.token) {
             break;
-        } else if (NUMBER == token) {
-            printf("number is %d\n", l->getCurrentToken().semInfo.r);
-        } else if (NAME == token) {
-            printf("symbol name is %s\n", l->getCurrentToken().semInfo.s);
+        } else if (NUMBER == token.token) {
+            printf("number is %d\n", token.semInfo.r);
+        } else if (NAME == token.token) {
+            printf("symbol name is %s\n", token.semInfo.s);
         }
     }
     return 0;

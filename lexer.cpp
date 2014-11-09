@@ -8,15 +8,21 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#if 0
 #define LEX_DEBUG(fmt, args...) \
     printf("[%s %d]\t" fmt, __func__, __LINE__, ##args);
+#else
+#define LEX_DEBUG(fmt, args...) \
+    do {} while(0)
+
+#endif
 
 static const char *tokens[] = {
     "if", "then", "else", "while", "do", "begin", "break", "end",
     "and", "or", "not",
     "<=", ">=", "==", "!=",
     "function", "return",
-    "<eof>", "<number>", "<name>"
+    "<eof>", "<number>", "<name>", "<stmt_list>"
 };
 
 int Lexer::currIsNewLine()

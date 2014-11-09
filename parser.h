@@ -17,6 +17,7 @@ private:
     AST* F();
     AST* assignment();
     AST* statement();
+    AST* block();
 
 public:
     Parser(const char *source);

@@ -11,6 +11,15 @@
  *
  */
 
+/*
+ * if exp then block {elseif exp then block } else block end
+ * exp -> 0 | 1
+ */
+
+/*
+ * block -> stmt | block
+ */
+
 Parser::Parser(const char *source)
 {
     _lexer = new Lexer(source);
@@ -74,7 +83,7 @@ AST* Parser::T()
     printf("T\n");
 
     AST *tmp = NULL;
-    AST *tree = F();
+    AST *tree = this->F();
 
     if (NULL == tree) {
         return NULL;
@@ -86,7 +95,7 @@ AST* Parser::T()
         tree = tmp;
         this->nextToken();
 
-        tmp = F();
+        tmp = this->F();
         if (NULL != tmp) {
             tree->addRight(tmp);
         } else {
@@ -102,7 +111,7 @@ AST* Parser::E()
     printf("E\n");
 
     AST *tmp = NULL;
-    AST *tree = T();
+    AST *tree = this->T();
 
     if (NULL == tree) {
         return NULL;
@@ -114,7 +123,7 @@ AST* Parser::E()
         tree = tmp;
         this->nextToken();
 
-        tmp = T();
+        tmp = this->T();
         if (NULL != tmp) {
             tree->addRight(tmp);
         } else {
@@ -153,8 +162,7 @@ AST* Parser::statement()
     printf("statement current token %d\n", _currentToken.token);
     switch (_currentToken.token) {
     case EOS:
-        tree = new AST(_currentToken);
-        break;
+        return NULL;
     case NAME:
         this->nextToken();
         tree = this->assignment();
@@ -167,10 +175,37 @@ AST* Parser::statement()
     return tree;
 }
 
+AST* Parser::block()
+{
+    printf("block\n");
+
+    AST *tmp = NULL;
+    AST *tree = this->statement();
+    Token t = {STMT_LIST, {-1, NULL}};
+
+    if (NULL == tree) {
+        printf("empty\n");
+        return NULL;
+    }
+
+    while (';' == _currentToken.token) {
+        this->nextToken();
+    }
+
+    tmp = new AST(t);
+    tmp->addLeft(tree);
+    tree = tmp;
+
+    tmp = this->block();
+    tree->addRight(tmp);
+    
+    return tree;
+}
+
 AST* Parser::parse()
 {
     AST *tree = NULL;
     this->nextToken();
-    tree = statement();
+    tree = this->block();
     return tree;
 }

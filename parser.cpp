@@ -17,7 +17,7 @@
  */
 
 /*
- * block -> stmt | block
+ * stmt_list -> stmt | stmt_list
  */
 
 Parser::Parser(const char *source)
@@ -175,9 +175,9 @@ AST* Parser::statement()
     return tree;
 }
 
-AST* Parser::block()
+AST* Parser::stmtList()
 {
-    printf("block\n");
+    printf("statement list\n");
 
     AST *tmp = NULL;
     AST *tree = this->statement();
@@ -196,7 +196,7 @@ AST* Parser::block()
     tmp->addLeft(tree);
     tree = tmp;
 
-    tmp = this->block();
+    tmp = this->stmtList();
     tree->addRight(tmp);
     
     return tree;
@@ -206,6 +206,6 @@ AST* Parser::parse()
 {
     AST *tree = NULL;
     this->nextToken();
-    tree = this->block();
+    tree = this->stmtList();
     return tree;
 }

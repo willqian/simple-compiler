@@ -17,7 +17,7 @@
  */
 
 /*
- * stmt_list -> stmt | stmt_list
+ * stmt_list -> stmt | stmt_list stmt_list | stmt_list ; stmt_list | e
  */
 
 Parser::Parser(const char *source)

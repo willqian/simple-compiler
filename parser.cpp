@@ -164,13 +164,15 @@ AST* Parser::statement()
     case EOS:
         return NULL;
     case NAME:
+    {
+        Token id = _currentToken;
         this->nextToken();
         tree = this->assignment();
         if (NULL != tree) {
-            Token id = {NAME, {-1, NULL}};
             tree->addLeft(id);
         }
         break;
+    }
     }
     return tree;
 }

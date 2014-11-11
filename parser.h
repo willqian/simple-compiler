@@ -19,6 +19,7 @@ private:
     AST* T2();
     AST* F2();
     AST* stmtIf();
+    AST* stmtWhile();
     AST* assignment();
     AST* statement();
     AST* stmtList();

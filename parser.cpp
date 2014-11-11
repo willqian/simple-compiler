@@ -13,7 +13,12 @@
 
 /*
  * if exp then block {elseif exp then block } else block end
- * exp -> 0 | 1
+ * exp -> bool
+ */
+
+/*
+ * while exp do block end
+ * exp -> bool
  */
 
 /*
@@ -79,6 +84,10 @@ AST* Parser::F()
         }
     } else if (NUMBER == _currentToken.token) {
         printf("number is %d\n", _currentToken.semInfo.r);
+        tree = new AST(_currentToken);
+        this->nextToken();
+    } else if (NAME == _currentToken.token) {
+        printf("name is %s\n", _currentToken.semInfo.s);
         tree = new AST(_currentToken);
         this->nextToken();
     } else {
@@ -275,6 +284,40 @@ AST* Parser::stmtIf()
     return tree;
 }
 
+AST* Parser::stmtWhile()
+{
+    AST *tree = new AST(_currentToken);
+    this->nextToken();
+    AST *bv = this->boolv();
+    AST *tmp = NULL;
+
+    if (NULL == bv) {
+        printf("error bool\n");
+        exit(1);
+    }
+    tree->addLeft(bv);
+
+    if (DO != _currentToken.token) {
+        printf("no do\n");
+        exit(1);
+    }
+    this->nextToken();
+    tmp = this->stmtList();
+
+    if (NULL == tmp) {
+        printf("error while block\n");
+        exit(1);
+    }
+    tree->addRight(tmp);
+    
+    if (END != _currentToken.token) {
+        printf("no end\n");
+        exit(1);
+    }
+    this->nextToken();
+    return tree;
+}
+
 AST* Parser::assignment()
 {
     printf("assignment current token %d\n", _currentToken.token);
@@ -317,6 +360,8 @@ AST* Parser::statement()
     case IF:
         tree = this->stmtIf();
         break;
+    case WHILE:
+        tree = this->stmtWhile();
     default:
         break;
     }

@@ -32,6 +32,16 @@ int VM::exe(AST *tree)
     if (NULL != tree) {
         if (NUMBER == tree->getRootNode()->getToken()->token) {
             return tree->getRootNode()->getToken()->semInfo.r;
+        } else if (NAME == tree->getRootNode()->getToken()->token) {
+            printf("NAME\n");
+            for (int i = 0; i < SYMBOL_NUMBER; i ++) {
+                if (NULL != sym[i].name 
+                        && 0 == strcmp(sym[i].name, tree->getRootNode()->getToken()->semInfo.s)) {
+                    printf("return %d\n", sym[i].number);
+                    return sym[i].number;
+                }
+            }
+            return 0;
         }
 
         switch (tree->getRootNode()->getToken()->token) {
@@ -90,11 +100,19 @@ int VM::exe(AST *tree)
             lv = this->exe(tree->getLeft());
             rv = this->exe(tree->getRight());
             for (int i = 0; i < SYMBOL_NUMBER; i ++) {
+                if (NULL != sym[i].name 
+                        && 0 == strcmp(sym[i].name, tree->getLeft()->getRootNode()->getToken()->semInfo.s)) {
+                    sym[i].number = rv;
+                    printf("name [%s] reassign [%d]\n", sym[i].name, sym[i].number);
+                    return 0;
+                }
+            }
+            for (int i = 0; i < SYMBOL_NUMBER; i ++) {
                 if (NULL == sym[i].name) {
                     sym[i].name = strdup(tree->getLeft()->getRootNode()->getToken()->semInfo.s);
                     sym[i].number = rv;
                     printf("name [%s] = [%d]\n", sym[i].name, sym[i].number);
-                    break;
+                    return 0;
                 }
             }
         }
@@ -105,6 +123,13 @@ int VM::exe(AST *tree)
                 this->exe(tree->getRight());
             } else {
                 this->exe(tree->getThird());
+            }
+            break;
+        }
+        case WHILE:
+        {
+            while (0 != this->exe(tree->getLeft())) {
+                this->exe(tree->getRight());
             }
             break;
         }

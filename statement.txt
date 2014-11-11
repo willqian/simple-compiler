@@ -1,3 +1,12 @@
 a = 8;
 ;
 b = 10
+if 3 < 1 then
+c = 5
+else
+if 5 > 2 then
+e = 10
+else
+d = 6
+end
+end

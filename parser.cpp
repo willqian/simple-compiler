@@ -17,6 +17,16 @@
  */
 
 /*
+ * bool -> T2 | bool A1 T2
+ * T2 -> F2 | T2 M1 F2
+ * F2 -> E | F2 N1 E
+ * A1 -> or
+ * M1 -> and
+ * N1 -> < | > | == | !=
+ *
+ */
+
+/*
  * stmt_list -> stmt | stmt_list stmt_list | stmt_list ; stmt_list | e
  */
 
@@ -134,6 +144,137 @@ AST* Parser::E()
     return tree;
 }
 
+AST* Parser::boolv()
+{
+    printf("boolv\n");
+
+    AST *tmp = NULL;
+    AST *tree = this->T2();
+
+    if (NULL == tree) {
+        return NULL;
+    }
+
+    while (OR == _currentToken.token) {
+        tmp = new AST(_currentToken);
+        tmp->addLeft(tree);
+        tree = tmp;
+        this->nextToken();
+
+        tmp = this->T2();
+        if (NULL != tmp) {
+            tree->addRight(tmp);
+        } else {
+            printf("boolv error\n");
+            exit(1);
+        }
+    } 
+    return tree;
+}
+
+AST* Parser::T2()
+{
+    printf("T2\n");
+
+    AST *tmp = NULL;
+    AST *tree = this->F2();
+
+    if (NULL == tree) {
+        return NULL;
+    }
+
+    while (AND == _currentToken.token) {
+        tmp = new AST(_currentToken);
+        tmp->addLeft(tree);
+        tree = tmp;
+        this->nextToken();
+
+        tmp = this->F2();
+        if (NULL != tmp) {
+            tree->addRight(tmp);
+        } else {
+            printf("T2 error\n");
+            exit(1);
+        }
+    } 
+    return tree;
+}
+
+AST* Parser::F2()
+{
+    printf("F2\n");
+
+    AST *tmp = NULL;
+    AST *tree = this->E();
+
+    if (NULL == tree) {
+        return NULL;
+    }
+
+    while ('<' == _currentToken.token || '>' == _currentToken.token 
+            || EQ == _currentToken.token || NE == _currentToken.token) {
+        tmp = new AST(_currentToken);
+        tmp->addLeft(tree);
+        tree = tmp;
+        this->nextToken();
+
+        tmp = this->E();
+        if (NULL != tmp) {
+            tree->addRight(tmp);
+        } else {
+            printf("F2 error\n");
+            exit(1);
+        }
+    } 
+    return tree;
+}
+
+AST* Parser::stmtIf()
+{
+    AST *tree = new AST(_currentToken);
+    this->nextToken();
+    AST *bv = this->boolv();
+    AST *tmp = NULL;
+    AST *tmp2 = NULL;
+
+    if (NULL == bv) {
+        printf("error bool\n");
+        exit(1);
+    }
+    tree->addLeft(bv);
+
+    if (THEN != _currentToken.token) {
+        printf("no then\n");
+        exit(1);
+    }
+    this->nextToken();
+    tmp = this->stmtList();
+
+    if (NULL == tmp) {
+        printf("error if block\n");
+        exit(1);
+    }
+    tree->addRight(tmp);
+    
+    if (ELSE == _currentToken.token) {
+        this->nextToken();
+        tmp2 = this->stmtList();
+        
+        if (NULL == tmp2) {
+            printf("error else block\n");
+            exit(1);
+        } 
+        tree->addThird(tmp2);
+    }
+
+    if (END != _currentToken.token) {
+        printf("no end\n");
+        exit(1);
+    }
+    this->nextToken();
+    return tree;
+}
+
 AST* Parser::assignment()
 {
     printf("assignment current token %d\n", _currentToken.token);
@@ -173,6 +314,11 @@ AST* Parser::statement()
         }
         break;
     }
+    case IF:
+        tree = this->stmtIf();
+        break;
+    default:
+        break;
     }
     return tree;
 }

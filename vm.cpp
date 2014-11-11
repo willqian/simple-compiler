@@ -29,30 +29,66 @@ int VM::exe(AST *tree)
     int rv = 0;
     int val = 0;
 
-    printf("exe\n");
     if (NULL != tree) {
         if (NUMBER == tree->getRootNode()->getToken()->token) {
             return tree->getRootNode()->getToken()->semInfo.r;
         }
-        lv = this->exe(tree->getLeft());
-        rv = this->exe(tree->getRight());
 
         switch (tree->getRootNode()->getToken()->token) {
         case '+':
+            lv = this->exe(tree->getLeft());
+            rv = this->exe(tree->getRight());
             val = lv + rv;
             break;
         case '-':
+            lv = this->exe(tree->getLeft());
+            rv = this->exe(tree->getRight());
             val = lv - rv;
             break;
         case '*':
+            lv = this->exe(tree->getLeft());
+            rv = this->exe(tree->getRight());
             val = lv * rv;
             break;
         case '/':
+            lv = this->exe(tree->getLeft());
+            rv = this->exe(tree->getRight());
             val = lv / rv;
+            break;
+        case '<':
+            lv = this->exe(tree->getLeft());
+            rv = this->exe(tree->getRight());
+            val = lv < rv;
+            break;
+        case '>':
+            lv = this->exe(tree->getLeft());
+            rv = this->exe(tree->getRight());
+            val = lv > rv;
+            break;
+        case EQ:
+            lv = this->exe(tree->getLeft());
+            rv = this->exe(tree->getRight());
+            val = lv == rv;
+            break;
+        case NE:
+            lv = this->exe(tree->getLeft());
+            rv = this->exe(tree->getRight());
+            val = lv != rv;
+            break;
+        case OR:
+            lv = this->exe(tree->getLeft());
+            rv = this->exe(tree->getRight());
+            val = lv || rv;
+            break;
+        case AND:
+            lv = this->exe(tree->getLeft());
+            rv = this->exe(tree->getRight());
+            val = lv && rv;
             break;
         case '=':
         {
-            printf("=\n");
+            lv = this->exe(tree->getLeft());
+            rv = this->exe(tree->getRight());
             for (int i = 0; i < SYMBOL_NUMBER; i ++) {
                 if (NULL == sym[i].name) {
                     sym[i].name = strdup(tree->getLeft()->getRootNode()->getToken()->semInfo.s);
@@ -62,12 +98,22 @@ int VM::exe(AST *tree)
                 }
             }
         }
-
+        case IF:
+        {
+            lv = this->exe(tree->getLeft());
+            if (0 != lv) {
+                this->exe(tree->getRight());
+            } else {
+                this->exe(tree->getThird());
+            }
+            break;
+        }
         default:
+            lv = this->exe(tree->getLeft());
+            rv = this->exe(tree->getRight());
             break;
         }
     }
-    printf("return %d\n", val);
     return val;
 }
 

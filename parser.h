@@ -15,6 +15,10 @@ private:
     AST* E();
     AST* T();
     AST* F();
+    AST* boolv();
+    AST* T2();
+    AST* F2();
+    AST* stmtIf();
     AST* assignment();
     AST* statement();
     AST* stmtList();

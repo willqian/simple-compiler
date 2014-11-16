@@ -10,8 +10,10 @@ class Parser {
 private:
     Lexer *_lexer;
     Token _currentToken;
+    void (*_func)(char *, AST *, SemInfo *);
 
     void check(int c);
+    void funcGetterCallback(char *name, AST *tree, SemInfo *infos);
     AST* E();
     AST* T();
     AST* F();
@@ -21,6 +23,11 @@ private:
     AST* stmtIf();
     AST* stmtWhile();
     AST* assignment();
+    AST* argList();
+    AST* argDeclareList();
+    AST* funCall(Token id);
+    AST* stmtFunc();
+    AST* stmtReturn();
     AST* statement();
     AST* stmtList();
 
@@ -29,6 +36,7 @@ public:
     ~Parser();
     Token nextToken();
     AST* parse();
+    void registerFuncGetter(void (*func)(char *name, AST *tree, SemInfo *argv));
 };
 
 #endif /* parser_h */

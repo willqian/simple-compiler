@@ -12,6 +12,23 @@ typedef struct {
 #define SYMBOL_NUMBER 10
 static Symbol sym[SYMBOL_NUMBER];
 
+typedef struct {
+    int stack[10];
+    int stackIndex;
+    Symbol sym[10];
+} Proto;
+
+typedef struct {
+    char *name;
+    AST *tree;
+    Symbol argv[10];
+    int argc;
+    Proto proto;
+} Func;
+
+
+static Func funcTable[10];
+
 VM::VM(AST *tree)
 {
     _tree = tree;

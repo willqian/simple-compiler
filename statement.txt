@@ -1,3 +1,10 @@
+function testAdd(x, y)
+    return x + y
+end
+
+function testEmpty()
+end
+
 a = 8;
 ;
 b = 10
@@ -14,3 +21,9 @@ while a < 10 do
 a = a + 1
 f = 12
 end
+
+f = testAdd(5, 10)
+f = 15
+
+testAdd(5, 8)
+a = 10

@@ -10,7 +10,8 @@ typedef enum {
     AND, OR, NOT,
     LE, GE, EQ, NE,
     FUNCTION, RETURN,
-    EOS, NUMBER, NAME, STMT_LIST
+    EOS, NUMBER, NAME, STMT_LIST,
+    FUNCALL, ARG_LIST
 } Reserved;
 
 class Lexer {

@@ -22,7 +22,8 @@ static const char *tokens[] = {
     "and", "or", "not",
     "<=", ">=", "==", "!=",
     "function", "return",
-    "<eof>", "<number>", "<name>", "<stmt_list>"
+    "<eof>", "<number>", "<name>", "<stmt_list>",
+    "<function_call>", "<arg_list>"
 };
 
 int Lexer::currIsNewLine()

@@ -1,6 +1,7 @@
 #include "parser.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /*
  * E -> T | E A T
@@ -35,10 +36,21 @@
  * stmt_list -> stmt | stmt_list stmt_list | stmt_list ; stmt_list | e
  */
 
+/*
+ * function name(arg1, arg2 ...)
+ *     return i;
+ * end
+ */
+
+/*
+ * name(i1, i2, ...)
+ */
+
 Parser::Parser(const char *source)
 {
     _lexer = new Lexer(source);
     _currentToken = {EOS, {-1, NULL}};
+    _func = NULL;
 }
 
 Parser::~Parser()
@@ -88,8 +100,13 @@ AST* Parser::F()
         this->nextToken();
     } else if (NAME == _currentToken.token) {
         printf("name is %s\n", _currentToken.semInfo.s);
-        tree = new AST(_currentToken);
+        Token t = _currentToken;
         this->nextToken();
+        if ('(' == _currentToken.token) {
+            tree = this->funCall(t);
+        } else {
+            tree = new AST(t);
+        }
     } else {
         printf("F error\n");
         exit(1);
@@ -336,6 +353,151 @@ AST* Parser::assignment()
         printf("assignment do nothing\n");
         return NULL;
     }
+    printf("assignment DONE\n");
+    return tree;
+}
+
+void Parser::funcGetterCallback(char *name, AST *tree, SemInfo *infos)
+{
+    if (NULL == _func) {
+        return;
+    }
+    _func(name, tree, infos);
+}
+
+AST* Parser::argList()
+{
+    AST *argList = NULL;
+    AST *tmp = NULL;
+    Token argl = {ARG_LIST, {-1, NULL}};
+
+    printf("arg list create\n");
+
+    this->nextToken();
+    if (')' == _currentToken.token) {
+        this->nextToken();
+        return NULL;
+    } 
+    argList = new AST(argl);
+    if (NAME != _currentToken.token 
+         && NUMBER != _currentToken.token) {
+        
+        printf("error function call, no argv\n");
+        exit(1);
+    }
+    tmp = new AST(_currentToken);
+    argList->addLeft(tmp);
+    
+    this->nextToken();
+    if (')' == _currentToken.token) {
+        this->nextToken();
+        return argList;
+    }
+    if (',' != _currentToken.token) {
+        printf("error function statment, no ,\n");
+        exit(1);
+    }
+    argList->addRight(this->argList());
+    return argList;
+}
+
+AST* Parser::argDeclareList()
+{
+    AST *argList = NULL;
+    AST *tmp = NULL;
+    Token argl = {ARG_LIST, {-1, NULL}};
+
+    printf("arg list create\n");
+
+    this->nextToken();
+    if (')' == _currentToken.token) {
+        this->nextToken();
+        return NULL;
+    } 
+    argList = new AST(argl);
+    if (NAME != _currentToken.token) {
+        
+        printf("error function call, no argv\n");
+        exit(1);
+    }
+    tmp = new AST(_currentToken);
+    argList->addLeft(tmp);
+    
+    this->nextToken();
+    if (')' == _currentToken.token) {
+        this->nextToken();
+        return argList;
+    }
+    if (',' != _currentToken.token) {
+        printf("error function statment, no ,\n");
+        exit(1);
+    }
+    argList->addRight(this->argDeclareList());
+    return argList;
+}
+AST* Parser::funCall(Token id)
+{
+    AST *tree = NULL;
+    Token token = {FUNCALL, {-1, NULL}};
+
+    token.semInfo.s = strdup(id.semInfo.s);
+    printf("function %s call\n", token.semInfo.s);
+    tree = new AST(token);
+    tree->addLeft(this->argList());
+    return tree;
+}
+
+AST* Parser::stmtFunc()
+{
+    AST *tree = NULL;
+    AST *tmp = NULL;
+
+    printf("ENTER function statement\n");
+    tree = new AST(_currentToken);
+    this->nextToken();
+    if (NAME != _currentToken.token) {
+        printf("error function statement\n");
+        exit(1);
+    }
+    tmp = new AST(_currentToken);
+    tree->addLeft(tmp);
+    printf("function name is %s\n", _currentToken.semInfo.s);
+
+    this->nextToken();
+
+    if ('(' != _currentToken.token) {
+        printf("function no (\n");
+        exit(1);
+    }
+
+    tree->addRight(this->argDeclareList());
+    
+    tmp = this->stmtList();
+
+    if (NULL != tmp) {
+        tree->addThird(tmp);
+    }
+
+    if (END != _currentToken.token) {
+        printf("function no end\n");
+        exit(1);
+    }
+    this->nextToken();
+    return tree;
+}
+
+AST* Parser::stmtReturn()
+{
+    AST *tree = NULL;
+    AST *tmp = NULL;
+
+    printf("RETURN statement\n");
+    tree = new AST(_currentToken);
+    this->nextToken();
+    tmp = this->E();
+    if (NULL != tmp) {
+        tree->addLeft(tmp);
+    }
     return tree;
 }
 
@@ -354,6 +516,9 @@ AST* Parser::statement()
         tree = this->assignment();
         if (NULL != tree) {
             tree->addLeft(id);
+        } else if ('(' == _currentToken.token) {
+            printf("funcall\n");
+            tree = this->funCall(id); 
         }
         break;
     }
@@ -362,6 +527,14 @@ AST* Parser::statement()
         break;
     case WHILE:
         tree = this->stmtWhile();
+        break;
+    case FUNCTION:
+        this->stmtFunc();
+        tree = this->statement();
+        break;
+    case RETURN:
+        tree = this->stmtReturn();
+        break;
     default:
         break;
     }
@@ -401,4 +574,9 @@ AST* Parser::parse()
     this->nextToken();
     tree = this->stmtList();
     return tree;
+}
+
+void Parser::registerFuncGetter(void (*func)(char *, AST *, SemInfo *))
+{
+    _func = func;
 }

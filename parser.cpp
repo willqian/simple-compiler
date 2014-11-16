@@ -443,7 +443,7 @@ AST* Parser::funCall(Token id)
     token.semInfo.s = strdup(id.semInfo.s);
     printf("function %s call\n", token.semInfo.s);
     tree = new AST(token);
-    tree->addLeft(this->argList());
+    tree->addRight(this->argList());
     return tree;
 }
 
@@ -529,8 +529,7 @@ AST* Parser::statement()
         tree = this->stmtWhile();
         break;
     case FUNCTION:
-        this->stmtFunc();
-        tree = this->statement();
+        tree = this->stmtFunc();
         break;
     case RETURN:
         tree = this->stmtReturn();

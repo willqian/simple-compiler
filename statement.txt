@@ -8,22 +8,24 @@ end
 a = 8;
 ;
 b = 10
+
 if 3 < 1 then
-c = 5
+    c = 5
 else
-if 5 > 2 then
-e = 10
-else
-d = 6
-end
-end
-while a < 10 do
-a = a + 1
-f = 12
+    if 5 > 2 then
+        e = 10
+    else
+        d = 6
+    end
 end
 
-f = testAdd(5, 10)
-f = 15
+while a < 10 do
+    a = a + 1
+    f = 12
+end
+
+f = testAdd(5, 15)
 
 testAdd(5, 8)
 a = 10
+b = a

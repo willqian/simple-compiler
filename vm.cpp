@@ -10,12 +10,12 @@ typedef struct {
 } Symbol;
 
 #define SYMBOL_NUMBER 10
-static Symbol sym[SYMBOL_NUMBER];
+static Symbol syms[SYMBOL_NUMBER];
+static Symbol *sym;
 
 typedef struct {
-    int stack[10];
-    int stackIndex;
-    Symbol sym[10];
+    Symbol syms[10];
+    int symIndex;
 } Proto;
 
 typedef struct {
@@ -26,13 +26,18 @@ typedef struct {
     Proto proto;
 } Func;
 
-
+static int ret = 0;
+static int status[10] = {-1}; /* 0-9 in function */
+static int statusIndex = 1;
 static Func funcTable[10];
+static Func funcEnv[10];
 
 VM::VM(AST *tree)
 {
     _tree = tree;
-    memset(sym, 0, sizeof(Symbol) * SYMBOL_NUMBER);
+    memset(syms, 0, sizeof(Symbol) * SYMBOL_NUMBER);
+    memset(funcTable, 0, sizeof(Func) * 10);
+    sym = syms;
 }
 
 VM::~VM()
@@ -60,7 +65,6 @@ int VM::exe(AST *tree)
             }
             return 0;
         }
-
         switch (tree->getRootNode()->getToken()->token) {
         case '+':
             lv = this->exe(tree->getLeft());
@@ -148,6 +152,96 @@ int VM::exe(AST *tree)
             while (0 != this->exe(tree->getLeft())) {
                 this->exe(tree->getRight());
             }
+            break;
+        }
+        case FUNCTION:
+        {
+            int i = 0;
+            AST* tmp = NULL;
+            printf("coming function \n");
+            for (i = 0; i < 10; i ++) {
+                if (NULL == funcTable[i].name) {
+                    break;
+                }
+            }
+            if (i >= 10) {
+                printf("function is more than 10\n");
+                exit(1);
+            }
+            funcTable[i].name = strdup(tree->getLeft()->getRootNode()->getToken()->semInfo.s);
+            funcTable[i].tree = tree->getThird();
+            tmp = tree;
+            while (1) {
+                if (NULL == tmp->getRight()) {
+                    break;
+                }
+                tmp = tmp->getRight();
+                funcTable[i].argv[funcTable[i].argc].name = strdup(tmp->getLeft()->getRootNode()->getToken()->semInfo.s);
+                printf("argument is %s\n", funcTable[i].argv[funcTable[i].argc].name);
+                funcTable[i].argc ++;
+            }
+            printf("out argument\n");
+            break;
+        }
+        case FUNCALL:
+        {
+            int i = 0;
+            AST *tmp = NULL;
+            Proto *proto = NULL;
+            int index = 0;
+            printf("coming function call \n");
+            for (i = 0; i < 10; i ++) {
+                if (NULL != funcTable[i].name
+                        && 0 == strcmp(funcTable[i].name, tree->getRootNode()->getToken()->semInfo.s)) {
+                    printf("find the function %s\n", funcTable[i].name);
+                    break;
+                }
+            }
+            status[statusIndex] = i;
+            statusIndex ++;
+            if (statusIndex >= 10) {
+                printf("status stack overflow\n");
+                exit(1);
+            }
+            memcpy(&funcEnv[i], &(funcTable[i]), sizeof(Func));
+
+            tmp = tree;
+            proto = &funcEnv[i].proto;
+            /* copy argument */
+            while (1) {
+                if (NULL == tmp->getRight()) {
+                    break;
+                }
+                tmp = tmp->getRight();
+                proto->syms[proto->symIndex].number = this->exe(tmp->getLeft());
+                printf("function call argument is %d\n", proto->syms[proto->symIndex].number);
+                proto->syms[proto->symIndex].name = strdup(funcEnv[i].argv[index].name);
+                index ++;
+                funcEnv[i].proto.symIndex ++;
+                if (index > funcEnv[i].argc) {
+                    printf("error argument\n");
+                    exit(1);
+                }
+            }
+
+            sym = funcEnv[i].proto.syms;
+            this->exe(funcEnv[i].tree);
+            val = ret;
+            statusIndex --;
+            if (statusIndex < 1) {
+                printf("status stack is too low\n");
+                exit(1);
+            }
+            if (status[statusIndex - 1] >= 0) {
+                sym = funcEnv[status[statusIndex] - 1].proto.syms;
+            } else {
+                sym = syms;
+            }
+            break;
+        }
+        case RETURN:
+        {
+            ret = this->exe(tree->getLeft());
             break;
         }
         default:
